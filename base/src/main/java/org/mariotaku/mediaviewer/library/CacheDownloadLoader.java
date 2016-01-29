@@ -65,17 +65,19 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
             return Result.nullInstance();
         }
         final String scheme = mUri.getScheme();
-        File cacheFile = null;
+
+        DownloadResult result = null;
         if ("http".equals(scheme) || "https".equals(scheme)) {
             final String uriString = mUri.toString();
             if (uriString == null) return Result.nullInstance();
+            File cacheFile;
             try {
                 cacheFile = mFileCache.get(uriString);
                 if (isValid(cacheFile)) {
                     return Result.getInstance(mFileCache.toUri(uriString));
                 }
                 // from SD cache
-                final DownloadResult result = mDownloader.get(uriString, mExtra);
+                result = mDownloader.get(uriString, mExtra);
                 try {
                     final long length = result.length;
                     mHandler.post(new DownloadStartRunnable(this, mListener, length));
@@ -102,6 +104,8 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
             } catch (final Exception e) {
                 mHandler.post(new DownloadErrorRunnable(this, mListener, e));
                 return Result.getInstance(e);
+            } finally {
+                Utils.closeSilently(result);
             }
         }
         return Result.getInstance(mUri);
