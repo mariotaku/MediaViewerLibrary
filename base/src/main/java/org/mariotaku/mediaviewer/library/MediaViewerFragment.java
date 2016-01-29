@@ -109,6 +109,12 @@ public abstract class MediaViewerFragment extends Fragment implements
 
     protected abstract boolean isAbleToLoad();
 
+    protected void setMediaViewVisible(boolean visible) {
+        final View view = getView();
+        if (view == null) return;
+        final View mediaContainer = view.findViewById(R.id.media_container);
+        mediaContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
 
     protected abstract Uri getDownloadUri();
 

@@ -12,6 +12,7 @@
         android:layout_height="48dp"
         android:layout_gravity="center"
         android:padding="2dp"
+        app:matProg_barColor="?android:colorActivatedHighlight"
         app:matProg_progressIndeterminate="true"/>
 
     <FrameLayout

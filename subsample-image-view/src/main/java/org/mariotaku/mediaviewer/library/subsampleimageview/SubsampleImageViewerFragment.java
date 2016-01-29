@@ -64,6 +64,7 @@ public class SubsampleImageViewerFragment extends MediaViewerFragment implements
 
     @Override
     protected void displayMedia(CacheDownloadLoader.Result data) {
+        setMediaViewVisible(true);
         mImageView.setImage(ImageSource.uri(data.cacheUri));
     }
 
@@ -79,6 +80,8 @@ public class SubsampleImageViewerFragment extends MediaViewerFragment implements
         setHasOptionsMenu(true);
         mImageView.setOnClickListener(this);
         startLoading();
+        showProgress(true, 0);
+        setMediaViewVisible(false);
     }
 
     public static SubsampleImageViewerFragment get(Uri mediaUri) {
