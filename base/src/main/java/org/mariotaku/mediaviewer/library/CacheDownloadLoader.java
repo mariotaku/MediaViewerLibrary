@@ -31,15 +31,16 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 
 
 public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoader.Result> {
 
-    private final Uri mUri;
     private final Handler mHandler;
     private final MediaDownloader mDownloader;
-    private final Listener mListener;
     private final FileCache mFileCache;
+    private final WeakReference<Listener> mListener;
+    private final Uri mUri;
     private final Object mExtra;
 
     public CacheDownloadLoader(final Context context, @NonNull final MediaDownloader downloader,
@@ -51,7 +52,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
         mExtra = extra;
         mDownloader = downloader;
         mFileCache = cache;
-        mListener = listener;
+        mListener = new WeakReference<>(listener);
     }
 
     private static boolean isValid(File entry) {
@@ -80,17 +81,17 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                 result = mDownloader.get(uriString, mExtra);
                 try {
                     final long length = result.length;
-                    mHandler.post(new DownloadStartRunnable(this, mListener, length));
+                    mHandler.post(new DownloadStartRunnable(this, mListener.get(), length));
 
                     mFileCache.save(uriString, result.stream, new FileCache.CopyListener() {
                         @Override
                         public boolean onCopied(int current) {
-                            mHandler.post(new ProgressUpdateRunnable(mListener, current, length));
+                            mHandler.post(new ProgressUpdateRunnable(mListener.get(), current, length));
                             return !isAbandoned();
                         }
 
                     });
-                    mHandler.post(new DownloadFinishRunnable(this, mListener));
+                    mHandler.post(new DownloadFinishRunnable(this, mListener.get()));
                 } finally {
                     Utils.closeSilently(result);
                 }
@@ -102,13 +103,19 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                     throw new IOException();
                 }
             } catch (final Exception e) {
-                mHandler.post(new DownloadErrorRunnable(this, mListener, e));
+                mHandler.post(new DownloadErrorRunnable(this, mListener.get(), e));
                 return Result.getInstance(e);
             } finally {
                 Utils.closeSilently(result);
             }
         }
         return Result.getInstance(mUri);
+    }
+
+    @Override
+    protected void onReset() {
+        super.onReset();
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
