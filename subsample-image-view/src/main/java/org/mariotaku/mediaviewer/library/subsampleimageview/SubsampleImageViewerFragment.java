@@ -13,14 +13,14 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import org.mariotaku.mediaviewer.library.AbsMediaViewerActivity;
 import org.mariotaku.mediaviewer.library.CacheDownloadLoader;
-import org.mariotaku.mediaviewer.library.MediaViewerFragment;
+import org.mariotaku.mediaviewer.library.CacheDownloadMediaViewerFragment;
 
 
 /**
  * Created by mariotaku on 16/1/20.
  */
-public class SubsampleImageViewerFragment extends MediaViewerFragment implements CacheDownloadLoader.Listener,
-        LoaderManager.LoaderCallbacks<CacheDownloadLoader.Result>,
+public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragment
+        implements CacheDownloadLoader.Listener, LoaderManager.LoaderCallbacks<CacheDownloadLoader.Result>,
         View.OnClickListener {
 
     public static final String EXTRA_MEDIA_URI = "media_url";
