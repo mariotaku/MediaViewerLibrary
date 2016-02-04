@@ -1,12 +1,8 @@
 package org.mariotaku.mediaviewer.library;
 
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +22,7 @@ public abstract class MediaViewerFragment extends Fragment {
         mProgressBar = (ProgressWheel) view.findViewById(R.id.load_progress);
     }
 
-    protected void showProgress(boolean indeterminate, float progress) {
+    public void showProgress(boolean indeterminate, float progress) {
         mProgressBar.setVisibility(View.VISIBLE);
         if (indeterminate) {
             if (mProgressBar.isSpinning()) {
@@ -37,7 +33,7 @@ public abstract class MediaViewerFragment extends Fragment {
         }
     }
 
-    protected void hideProgress() {
+    public void hideProgress() {
         mProgressBar.setVisibility(View.GONE);
     }
 
@@ -54,7 +50,7 @@ public abstract class MediaViewerFragment extends Fragment {
     protected abstract View onCreateMediaView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState);
 
 
-    protected void setMediaViewVisible(boolean visible) {
+    public void setMediaViewVisible(boolean visible) {
         final View view = getView();
         if (view == null) return;
         final View mediaContainer = view.findViewById(R.id.media_container);
