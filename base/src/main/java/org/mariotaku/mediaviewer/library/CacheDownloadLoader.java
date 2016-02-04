@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.v4.content.AsyncTaskLoader;
 
@@ -40,12 +41,14 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
     private final MediaDownloader mDownloader;
     private final FileCache mFileCache;
     private final WeakReference<Listener> mListener;
+    @NonNull
     private final Uri mUri;
     private final Object mExtra;
+    private final boolean mIgnoreCache;
 
     public CacheDownloadLoader(final Context context, @NonNull final MediaDownloader downloader,
                                @NonNull final FileCache cache, @NonNull final Listener listener,
-                               final Uri uri, final Object extra) {
+                               @NonNull final Uri uri, @Nullable final Object extra, boolean ignoreCache) {
         super(context);
         mHandler = new Handler(Looper.getMainLooper());
         mUri = uri;
@@ -53,6 +56,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
         mDownloader = downloader;
         mFileCache = cache;
         mListener = new WeakReference<>(listener);
+        mIgnoreCache = ignoreCache;
     }
 
     private static boolean isValid(File entry) {
@@ -62,20 +66,18 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
     @Override
     @NonNull
     public CacheDownloadLoader.Result loadInBackground() {
-        if (mUri == null) {
-            return Result.nullInstance();
-        }
         final String scheme = mUri.getScheme();
-
         DownloadResult result = null;
         if ("http".equals(scheme) || "https".equals(scheme)) {
             final String uriString = mUri.toString();
             if (uriString == null) return Result.nullInstance();
             File cacheFile;
             try {
-                cacheFile = mFileCache.get(uriString);
-                if (isValid(cacheFile)) {
-                    return Result.getInstance(mFileCache.toUri(uriString));
+                if (!mIgnoreCache) {
+                    cacheFile = mFileCache.get(uriString);
+                    if (isValid(cacheFile)) {
+                        return Result.getInstance(mFileCache.toUri(uriString));
+                    }
                 }
                 // from SD cache
                 result = mDownloader.get(uriString, mExtra);
@@ -162,19 +164,21 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
     }
 
     public static class Result {
+        @Nullable
         public final Uri cacheUri;
+        @Nullable
         public final Exception exception;
 
-        public Result(final Uri cacheUri, final Exception exception) {
+        public Result(@Nullable final Uri cacheUri, @Nullable final Exception exception) {
             this.cacheUri = cacheUri;
             this.exception = exception;
         }
 
-        public static Result getInstance(final Uri uri) {
+        public static Result getInstance(@NonNull final Uri uri) {
             return new Result(uri, null);
         }
 
-        public static Result getInstance(final Exception e) {
+        public static Result getInstance(@NonNull final Exception e) {
             return new Result(null, e);
         }
 

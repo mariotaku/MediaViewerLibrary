@@ -49,9 +49,10 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
 
     @Override
     protected boolean isAbleToLoad() {
-        return true;
+        return getDownloadUri() != null;
     }
 
+    @Nullable
     @Override
     protected Uri getDownloadUri() {
         return getArguments().getParcelable(EXTRA_MEDIA_URI);
@@ -64,8 +65,12 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
 
     @Override
     protected void displayMedia(CacheDownloadLoader.Result data) {
-        setMediaViewVisible(true);
-        mImageView.setImage(ImageSource.uri(data.cacheUri));
+        if (data.cacheUri != null) {
+            setMediaViewVisible(true);
+            mImageView.setImage(ImageSource.uri(data.cacheUri));
+        } else {
+            setMediaViewVisible(false);
+        }
     }
 
 
@@ -79,7 +84,7 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
         mImageView.setOnClickListener(this);
-        startLoading();
+        startLoading(false);
         showProgress(true, 0);
         setMediaViewVisible(false);
     }
