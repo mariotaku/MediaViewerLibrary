@@ -30,21 +30,25 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
 
     @Override
     public final void onDownloadError(Throwable t) {
+        if (getActivity() == null || isDetached()) return;
         hideProgress();
     }
 
     @Override
     public final void onDownloadFinished() {
+        if (getActivity() == null || isDetached()) return;
         hideProgress();
     }
 
     @Override
     public final void onDownloadStart(long total) {
+        if (getActivity() == null || isDetached()) return;
         showProgress(true, 0);
     }
 
     @Override
     public final void onProgressUpdate(long current, long total) {
+        if (getActivity() == null || isDetached()) return;
         showProgress(false, current / (float) total);
     }
 
@@ -89,7 +93,6 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
         mDownloadResult = data;
         hideProgress();
         displayMedia(data);
-        getActivity().supportInvalidateOptionsMenu();
     }
 
     protected abstract void displayMedia(CacheDownloadLoader.Result data);

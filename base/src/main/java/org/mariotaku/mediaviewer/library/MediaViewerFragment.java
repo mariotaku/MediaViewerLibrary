@@ -3,6 +3,7 @@ package org.mariotaku.mediaviewer.library;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,11 @@ public abstract class MediaViewerFragment extends Fragment {
     }
 
     public void showProgress(boolean indeterminate, float progress) {
+        final FragmentActivity activity = getActivity();
+        if (activity == null) return;
+        if (mProgressBar.getVisibility() != View.VISIBLE) {
+            activity.supportInvalidateOptionsMenu();
+        }
         mProgressBar.setVisibility(View.VISIBLE);
         if (indeterminate) {
             if (mProgressBar.isSpinning()) {
@@ -34,6 +40,9 @@ public abstract class MediaViewerFragment extends Fragment {
     }
 
     public void hideProgress() {
+        final FragmentActivity activity = getActivity();
+        if (activity == null) return;
+        activity.supportInvalidateOptionsMenu();
         mProgressBar.setVisibility(View.GONE);
     }
 
@@ -53,6 +62,9 @@ public abstract class MediaViewerFragment extends Fragment {
     public void setMediaViewVisible(boolean visible) {
         final View view = getView();
         if (view == null) return;
+        final FragmentActivity activity = getActivity();
+        if (activity == null) return;
+        activity.supportInvalidateOptionsMenu();
         final View mediaContainer = view.findViewById(R.id.media_container);
         mediaContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
