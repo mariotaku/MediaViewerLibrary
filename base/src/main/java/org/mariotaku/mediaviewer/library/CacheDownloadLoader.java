@@ -82,10 +82,10 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                 // from SD cache
                 result = mDownloader.get(uriString, mExtra);
                 try {
-                    final long length = result.length;
+                    final long length = result.getLength();
                     mHandler.post(new DownloadStartRunnable(this, mListener.get(), length));
 
-                    mFileCache.save(uriString, result.stream, new FileCache.CopyListener() {
+                    mFileCache.save(uriString, result.getStream(), new FileCache.CopyListener() {
                         @Override
                         public boolean onCopied(int current) {
                             mHandler.post(new ProgressUpdateRunnable(mListener.get(), current, length));
@@ -140,27 +140,12 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
         void onProgressUpdate(long current, long total);
     }
 
-    public static final class DownloadResult implements Closeable {
-        long length;
-        InputStream stream;
+    public interface DownloadResult extends Closeable {
 
-        public DownloadResult(long length, InputStream stream) {
-            this.length = length;
-            this.stream = stream;
-        }
+        long getLength();
 
-        public long getLength() {
-            return length;
-        }
+        InputStream getStream();
 
-        public InputStream getStream() {
-            return stream;
-        }
-
-        @Override
-        public void close() throws IOException {
-            stream.close();
-        }
     }
 
     public static class Result {
