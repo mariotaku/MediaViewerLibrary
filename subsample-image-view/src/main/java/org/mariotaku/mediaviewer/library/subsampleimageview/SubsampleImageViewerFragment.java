@@ -2,6 +2,7 @@ package org.mariotaku.mediaviewer.library.subsampleimageview;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.view.LayoutInflater;
@@ -26,7 +27,6 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
     public static final String EXTRA_MEDIA_URI = "media_url";
 
     private SubsamplingScaleImageView mImageView;
-
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -65,12 +65,17 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
 
     @Override
     protected void displayMedia(CacheDownloadLoader.Result data) {
+        onMediaLoadStateChange(State.NONE);
         if (data.cacheUri != null) {
             setMediaViewVisible(true);
             mImageView.setImage(ImageSource.uri(data.cacheUri));
         } else {
             setMediaViewVisible(false);
         }
+    }
+
+    protected void onMediaLoadStateChange(@State int state) {
+
     }
 
 
@@ -84,6 +89,32 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
         mImageView.setOnClickListener(this);
+        mImageView.setOnImageEventListener(new SubsamplingScaleImageView.OnImageEventListener() {
+            @Override
+            public void onReady() {
+                onMediaLoadStateChange(State.READY);
+            }
+
+            @Override
+            public void onImageLoaded() {
+                onMediaLoadStateChange(State.LOADED);
+            }
+
+            @Override
+            public void onPreviewLoadError(Exception e) {
+
+            }
+
+            @Override
+            public void onImageLoadError(Exception e) {
+                onMediaLoadStateChange(State.ERROR);
+            }
+
+            @Override
+            public void onTileLoadError(Exception e) {
+
+            }
+        });
         startLoading(false);
         showProgress(true, 0);
         setMediaViewVisible(false);
@@ -95,5 +126,14 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
         final SubsampleImageViewerFragment f = new SubsampleImageViewerFragment();
         f.setArguments(args);
         return f;
+    }
+
+    @IntDef({State.NONE, State.READY, State.LOADED, State.ERROR})
+    public @interface State {
+
+        int NONE = 0;
+        int READY = 1;
+        int LOADED = 2;
+        int ERROR = -1;
     }
 }
