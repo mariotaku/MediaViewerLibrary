@@ -29,62 +29,6 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
     private SubsamplingScaleImageView mImageView;
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mImageView = (SubsamplingScaleImageView) view.findViewById(R.id.image_view);
-    }
-
-    @Override
-    protected View onCreateMediaView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.layout_media_viewer_subsample_image_view, container, false);
-    }
-
-    @Override
-    public void onClick(View v) {
-        final AbsMediaViewerActivity activity = (AbsMediaViewerActivity) getActivity();
-        if (activity == null) return;
-        activity.toggleBar();
-    }
-
-
-    @Override
-    protected boolean isAbleToLoad() {
-        return getDownloadUri() != null;
-    }
-
-    @Nullable
-    @Override
-    protected Uri getDownloadUri() {
-        return getArguments().getParcelable(EXTRA_MEDIA_URI);
-    }
-
-    @Override
-    protected Object getDownloadExtra() {
-        return null;
-    }
-
-    @Override
-    protected void displayMedia(CacheDownloadLoader.Result data) {
-        onMediaLoadStateChange(State.NONE);
-        if (data.cacheUri != null) {
-            setMediaViewVisible(true);
-            mImageView.setImage(ImageSource.uri(data.cacheUri));
-        } else {
-            setMediaViewVisible(false);
-        }
-    }
-
-    protected void onMediaLoadStateChange(@State int state) {
-
-    }
-
-
-    @Override
-    protected void recycleMedia() {
-        mImageView.recycle();
-    }
-
-    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
@@ -115,9 +59,69 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
 
             }
         });
+        setupImageView(mImageView);
         startLoading(false);
         showProgress(true, 0);
         setMediaViewVisible(false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mImageView = (SubsamplingScaleImageView) view.findViewById(R.id.image_view);
+    }
+
+    @Override
+    public void onClick(View v) {
+        final AbsMediaViewerActivity activity = (AbsMediaViewerActivity) getActivity();
+        if (activity == null) return;
+        activity.toggleBar();
+    }
+
+
+    @Override
+    protected View onCreateMediaView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.layout_media_viewer_subsample_image_view, container, false);
+    }
+
+    @Override
+    protected boolean isAbleToLoad() {
+        return getDownloadUri() != null;
+    }
+
+    @Nullable
+    @Override
+    protected Uri getDownloadUri() {
+        return getArguments().getParcelable(EXTRA_MEDIA_URI);
+    }
+
+    @Override
+    protected Object getDownloadExtra() {
+        return null;
+    }
+
+    @Override
+    protected void displayMedia(CacheDownloadLoader.Result data) {
+        onMediaLoadStateChange(State.NONE);
+        if (data.cacheUri != null) {
+            setMediaViewVisible(true);
+            mImageView.setImage(ImageSource.uri(data.cacheUri));
+        } else {
+            setMediaViewVisible(false);
+        }
+    }
+
+
+    @Override
+    protected void recycleMedia() {
+        mImageView.recycle();
+    }
+
+    protected void onMediaLoadStateChange(@State int state) {
+
+    }
+
+    protected void setupImageView(SubsamplingScaleImageView imageView) {
     }
 
     public static SubsampleImageViewerFragment get(Uri mediaUri) {
