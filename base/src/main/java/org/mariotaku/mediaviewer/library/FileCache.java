@@ -1,6 +1,8 @@
 package org.mariotaku.mediaviewer.library;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 import java.io.File;
@@ -13,17 +15,21 @@ import java.io.InputStream;
 @WorkerThread
 public interface FileCache {
     @WorkerThread
-    File get(String key) throws IOException;
+    @Nullable
+    File get(@NonNull String key) throws IOException;
 
     @WorkerThread
-    void remove(String key) throws IOException;
+    void remove(@NonNull String key) throws IOException;
 
     @WorkerThread
-    void save(String key, InputStream stream, CopyListener listener) throws IOException;
+    void save(@NonNull final String key, @NonNull final InputStream stream,
+              @Nullable final byte[] extra, @Nullable final CopyListener listener) throws IOException;
 
-    Uri toUri(String key);
+    @NonNull
+    Uri toUri(@NonNull String key);
 
-    String fromUri(Uri uri);
+    @NonNull
+    String fromUri(@NonNull Uri uri);
 
     interface CopyListener {
         @WorkerThread

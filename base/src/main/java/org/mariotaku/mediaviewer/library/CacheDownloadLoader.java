@@ -28,7 +28,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.v4.content.AsyncTaskLoader;
 
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -86,7 +85,8 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                     final long length = result.getLength();
                     mHandler.post(new DownloadStartRunnable(this, mListener.get(), length));
 
-                    mFileCache.save(uriString, result.getStream(), new FileCache.CopyListener() {
+                    final byte[] extra = result.getExtra();
+                    mFileCache.save(uriString, result.getStream(), extra, new FileCache.CopyListener() {
                         @Override
                         public boolean onCopied(int current) {
                             mHandler.post(new ProgressUpdateRunnable(mListener.get(), current, length));
@@ -94,10 +94,6 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                         }
 
                     });
-                    final byte[] extra = result.getExtra();
-                    if (extra != null) {
-                        mFileCache.save(getExtraKey(uriString), new ByteArrayInputStream(result.getExtra()), null);
-                    }
                     mHandler.post(new DownloadFinishRunnable(this, mListener.get()));
                 } finally {
                     Utils.closeSilently(result);
@@ -117,10 +113,6 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
             }
         }
         return Result.getInstance(mUri);
-    }
-
-    public static String getExtraKey(String uri) {
-        return uri + ".extra";
     }
 
     @Override
@@ -153,8 +145,10 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
 
         long getLength() throws IOException;
 
+        @NonNull
         InputStream getStream() throws IOException;
 
+        @Nullable
         byte[] getExtra() throws IOException;
 
     }
