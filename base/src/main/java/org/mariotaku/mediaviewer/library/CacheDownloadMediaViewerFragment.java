@@ -29,25 +29,25 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
     }
 
     @Override
-    public final void onDownloadError(Throwable t) {
+    public void onDownloadError(Throwable t) {
         if (getActivity() == null || isDetached()) return;
         hideProgress();
     }
 
     @Override
-    public final void onDownloadFinished() {
+    public void onDownloadFinished() {
         if (getActivity() == null || isDetached()) return;
         hideProgress();
     }
 
     @Override
-    public final void onDownloadStart(long total) {
+    public void onDownloadStart(long total) {
         if (getActivity() == null || isDetached()) return;
         showProgress(true, 0);
     }
 
     @Override
-    public final void onProgressUpdate(long current, long total) {
+    public void onProgressUpdate(long current, long total) {
         if (getActivity() == null || isDetached()) return;
         showProgress(false, current / (float) total);
     }
