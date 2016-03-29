@@ -72,6 +72,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
             final String uriString = mUri.toString();
             if (uriString == null) return Result.nullInstance();
             File cacheFile;
+            final long nonce = System.currentTimeMillis();
             try {
                 if (!mIgnoreCache) {
                     cacheFile = mFileCache.get(uriString);
@@ -79,25 +80,22 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                         return Result.getInstance(mFileCache.toUri(uriString));
                     }
                 }
+                mHandler.post(new DownloadRequestedRunnable(this, mListener.get(), nonce));
                 // from SD cache
                 result = mDownloader.get(uriString, mExtra);
-                try {
-                    final long length = result.getLength();
-                    mHandler.post(new DownloadStartRunnable(this, mListener.get(), length));
+                final long length = result.getLength();
+                mHandler.post(new DownloadStartRunnable(this, mListener.get(), nonce, length));
 
-                    final byte[] extra = result.getExtra();
-                    mFileCache.save(uriString, result.getStream(), extra, new FileCache.CopyListener() {
-                        @Override
-                        public boolean onCopied(int current) {
-                            mHandler.post(new ProgressUpdateRunnable(mListener.get(), current, length));
-                            return !isAbandoned();
-                        }
+                final byte[] extra = result.getExtra();
+                mFileCache.save(uriString, result.getStream(), extra, new FileCache.CopyListener() {
+                    @Override
+                    public boolean onCopied(int current) {
+                        mHandler.post(new ProgressUpdateRunnable(mListener.get(), current, length, nonce));
+                        return !isAbandoned();
+                    }
 
-                    });
-                    mHandler.post(new DownloadFinishRunnable(this, mListener.get()));
-                } finally {
-                    Utils.closeSilently(result);
-                }
+                });
+                mHandler.post(new DownloadFinishRunnable(this, mListener.get(), nonce));
                 cacheFile = mFileCache.get(uriString);
                 if (isValid(cacheFile)) {
                     return Result.getInstance(mFileCache.toUri(uriString));
@@ -106,7 +104,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                     throw new IOException();
                 }
             } catch (final Exception e) {
-                mHandler.post(new DownloadErrorRunnable(this, mListener.get(), e));
+                mHandler.post(new DownloadErrorRunnable(this, mListener.get(), e, nonce));
                 return Result.getInstance(e);
             } finally {
                 Utils.closeSilently(result);
@@ -129,16 +127,19 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
 
     public interface Listener {
         @UiThread
-        void onDownloadError(Throwable t);
+        void onDownloadError(Throwable t, long nonce);
 
         @UiThread
-        void onDownloadFinished();
+        void onDownloadFinished(long nonce);
 
         @UiThread
-        void onDownloadStart(long total);
+        void onDownloadStart(long total, long nonce);
 
         @UiThread
-        void onProgressUpdate(long current, long total);
+        void onDownloadRequested(long nonce);
+
+        @UiThread
+        void onProgressUpdate(long current, long total, long nonce);
     }
 
     public interface DownloadResult extends Closeable {
@@ -182,17 +183,19 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
         private final CacheDownloadLoader loader;
         private final Listener listener;
         private final Throwable t;
+        private final long nonce;
 
-        DownloadErrorRunnable(final CacheDownloadLoader loader, final Listener listener, final Throwable t) {
+        DownloadErrorRunnable(final CacheDownloadLoader loader, final Listener listener, final Throwable t, long nonce) {
             this.loader = loader;
             this.listener = listener;
             this.t = t;
+            this.nonce = nonce;
         }
 
         @Override
         public void run() {
             if (listener == null || loader.isAbandoned() || loader.isReset()) return;
-            listener.onDownloadError(t);
+            listener.onDownloadError(t, nonce);
         }
     }
 
@@ -200,16 +203,18 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
 
         private final CacheDownloadLoader loader;
         private final Listener listener;
+        private final long nonce;
 
-        DownloadFinishRunnable(final CacheDownloadLoader loader, final Listener listener) {
+        DownloadFinishRunnable(final CacheDownloadLoader loader, final Listener listener, long nonce) {
             this.loader = loader;
             this.listener = listener;
+            this.nonce = nonce;
         }
 
         @Override
         public void run() {
             if (listener == null || loader.isAbandoned() || loader.isReset()) return;
-            listener.onDownloadFinished();
+            listener.onDownloadFinished(nonce);
         }
     }
 
@@ -217,18 +222,39 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
 
         private final CacheDownloadLoader loader;
         private final Listener listener;
+        private final long nonce;
         private final long total;
 
-        DownloadStartRunnable(final CacheDownloadLoader loader, final Listener listener, final long total) {
+        DownloadStartRunnable(final CacheDownloadLoader loader, final Listener listener, final long nonce, final long total) {
             this.loader = loader;
             this.listener = listener;
+            this.nonce = nonce;
             this.total = total;
         }
 
         @Override
         public void run() {
             if (listener == null || loader.isAbandoned() || loader.isReset()) return;
-            listener.onDownloadStart(total);
+            listener.onDownloadStart(total, nonce);
+        }
+    }
+
+    private final static class DownloadRequestedRunnable implements Runnable {
+
+        private final CacheDownloadLoader loader;
+        private final Listener listener;
+        private final long nonce;
+
+        DownloadRequestedRunnable(final CacheDownloadLoader loader, final Listener listener, final long nonce) {
+            this.loader = loader;
+            this.listener = listener;
+            this.nonce = nonce;
+        }
+
+        @Override
+        public void run() {
+            if (listener == null || loader.isAbandoned() || loader.isReset()) return;
+            listener.onDownloadRequested(nonce);
         }
     }
 
@@ -236,17 +262,19 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
 
         private final Listener listener;
         private final long current, total;
+        private final long nonce;
 
-        ProgressUpdateRunnable(final Listener listener, final long current, final long total) {
+        ProgressUpdateRunnable(final Listener listener, final long current, final long total, long nonce) {
             this.listener = listener;
             this.current = current;
             this.total = total;
+            this.nonce = nonce;
         }
 
         @Override
         public void run() {
             if (listener == null) return;
-            listener.onProgressUpdate(current, total);
+            listener.onProgressUpdate(current, total, nonce);
         }
     }
 }
