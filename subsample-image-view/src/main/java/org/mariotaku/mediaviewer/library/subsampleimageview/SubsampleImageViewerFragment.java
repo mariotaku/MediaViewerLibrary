@@ -12,9 +12,9 @@ import android.view.ViewGroup;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
-import org.mariotaku.mediaviewer.library.AbsMediaViewerActivity;
 import org.mariotaku.mediaviewer.library.CacheDownloadLoader;
 import org.mariotaku.mediaviewer.library.CacheDownloadMediaViewerFragment;
+import org.mariotaku.mediaviewer.library.IMediaViewerActivity;
 
 
 /**
@@ -73,7 +73,7 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
 
     @Override
     public void onClick(View v) {
-        final AbsMediaViewerActivity activity = (AbsMediaViewerActivity) getActivity();
+        final IMediaViewerActivity activity = (IMediaViewerActivity) getActivity();
         if (activity == null) return;
         activity.toggleBar();
     }

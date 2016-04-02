@@ -68,11 +68,11 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
     }
 
     private FileCache getFileCache() {
-        return ((AbsMediaViewerActivity) getActivity()).getFileCache();
+        return ((IMediaViewerActivity) getActivity()).getFileCache();
     }
 
     private MediaDownloader getDownloader() {
-        return ((AbsMediaViewerActivity) getActivity()).getDownloader();
+        return ((IMediaViewerActivity) getActivity()).getDownloader();
     }
 
     public final void startLoading(boolean ignoreCache) {
