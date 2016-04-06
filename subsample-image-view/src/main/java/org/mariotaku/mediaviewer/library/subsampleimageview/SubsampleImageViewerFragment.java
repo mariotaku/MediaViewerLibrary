@@ -3,6 +3,7 @@ package org.mariotaku.mediaviewer.library.subsampleimageview;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
     public static final String EXTRA_MEDIA_URI = "media_url";
 
     private SubsamplingScaleImageView mImageView;
+    private boolean mHasPreview;
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -34,24 +36,37 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
         setHasOptionsMenu(true);
         mImageView.setOnClickListener(this);
         mImageView.setOnImageEventListener(new SubsamplingScaleImageView.OnImageEventListener() {
+
+            boolean previewLoadError, imageLoadError;
+
             @Override
             public void onReady() {
+                previewLoadError = false;
+                imageLoadError = false;
                 onMediaLoadStateChange(State.READY);
             }
 
             @Override
             public void onImageLoaded() {
+                previewLoadError = false;
+                imageLoadError = false;
                 onMediaLoadStateChange(State.LOADED);
             }
 
             @Override
             public void onPreviewLoadError(Exception e) {
-
+                previewLoadError = true;
+                if (mHasPreview && imageLoadError) {
+                    onMediaLoadStateChange(State.ERROR);
+                }
             }
 
             @Override
             public void onImageLoadError(Exception e) {
-                onMediaLoadStateChange(State.ERROR);
+                imageLoadError = true;
+                if (mHasPreview && previewLoadError) {
+                    onMediaLoadStateChange(State.ERROR);
+                }
             }
 
             @Override
@@ -105,12 +120,24 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
         onMediaLoadStateChange(State.NONE);
         if (data.cacheUri != null) {
             setMediaViewVisible(true);
-            mImageView.setImage(ImageSource.uri(data.cacheUri));
+            final ImageSource previewSource = getPreviewImageSource(data);
+            mHasPreview = previewSource != null;
+            mImageView.setImage(getImageSource(data), previewSource);
         } else {
             setMediaViewVisible(false);
         }
     }
 
+    @NonNull
+    protected ImageSource getImageSource(@NonNull CacheDownloadLoader.Result data) {
+        assert data.cacheUri != null;
+        return ImageSource.uri(data.cacheUri);
+    }
+
+    @Nullable
+    protected ImageSource getPreviewImageSource(@NonNull CacheDownloadLoader.Result data) {
+        return null;
+    }
 
     @Override
     protected void recycleMedia() {

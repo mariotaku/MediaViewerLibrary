@@ -45,10 +45,12 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
     private final Uri mUri;
     private final Object mExtra;
     private final boolean mIgnoreCache;
+    private final ResultCreator mCreator;
 
     public CacheDownloadLoader(final Context context, @NonNull final MediaDownloader downloader,
                                @NonNull final FileCache cache, @NonNull final Listener listener,
-                               @NonNull final Uri uri, @Nullable final Object extra, boolean ignoreCache) {
+                               @NonNull final Uri uri, @Nullable final Object extra,
+                               @Nullable ResultCreator creator, boolean ignoreCache) {
         super(context);
         mHandler = new Handler(Looper.getMainLooper());
         mUri = uri;
@@ -56,6 +58,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
         mDownloader = downloader;
         mFileCache = cache;
         mListener = new WeakReference<>(listener);
+        mCreator = creator != null ? creator : new DefaultResultCreator();
         mIgnoreCache = ignoreCache;
     }
 
@@ -77,7 +80,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                 if (!mIgnoreCache) {
                     cacheFile = mFileCache.get(uriString);
                     if (isValid(cacheFile)) {
-                        return Result.getInstance(mFileCache.toUri(uriString));
+                        return mCreator.create(mFileCache.toUri(uriString));
                     }
                 }
                 mHandler.post(new DownloadRequestedRunnable(this, mListener.get(), nonce));
@@ -98,7 +101,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                 mHandler.post(new DownloadFinishRunnable(this, mListener.get(), nonce));
                 cacheFile = mFileCache.get(uriString);
                 if (isValid(cacheFile)) {
-                    return Result.getInstance(mFileCache.toUri(uriString));
+                    return mCreator.create(mFileCache.toUri(uriString));
                 } else {
                     mFileCache.remove(uriString);
                     throw new IOException();
@@ -110,7 +113,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                 Utils.closeSilently(result);
             }
         }
-        return Result.getInstance(mUri);
+        return mCreator.create(mUri);
     }
 
     @Override
@@ -152,6 +155,18 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
         @Nullable
         byte[] getExtra() throws IOException;
 
+    }
+
+    public interface ResultCreator {
+        Result create(Uri uri);
+    }
+
+    static class DefaultResultCreator implements ResultCreator {
+
+        @Override
+        public Result create(Uri uri) {
+            return Result.getInstance(uri);
+        }
     }
 
     public static class Result {

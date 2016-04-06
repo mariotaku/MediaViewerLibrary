@@ -64,7 +64,7 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
         if (downloadUri == null) throw new NullPointerException();
         final boolean ignoreCache = args.getBoolean(EXTRA_IGNORE_CACHE);
         return new CacheDownloadLoader(getContext(), getDownloader(), getFileCache(), this,
-                downloadUri, getDownloadExtra(), ignoreCache);
+                downloadUri, getDownloadExtra(), getResultCreator(), ignoreCache);
     }
 
     private FileCache getFileCache() {
@@ -93,6 +93,11 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
 
     @Nullable
     protected abstract Object getDownloadExtra();
+
+    @Nullable
+    protected CacheDownloadLoader.ResultCreator getResultCreator() {
+        return null;
+    }
 
     @Override
     public final void onLoadFinished(Loader<CacheDownloadLoader.Result> loader, @NonNull CacheDownloadLoader.Result data) {
