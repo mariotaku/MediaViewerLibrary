@@ -131,7 +131,9 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
     @NonNull
     protected ImageSource getImageSource(@NonNull CacheDownloadLoader.Result data) {
         assert data.cacheUri != null;
-        return ImageSource.uri(data.cacheUri);
+        final ImageSource imageSource = ImageSource.uri(data.cacheUri);
+        imageSource.tilingEnabled();
+        return imageSource;
     }
 
     @Nullable
