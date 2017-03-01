@@ -7,12 +7,12 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 1
-        versionName "0.9"
+        versionCode 19
+        versionName "0.9.19"
     }
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:23.3.0'
+    compile 'com.android.support:support-v4:25.2.0'
     compile 'com.pnikosis:materialish-progress:1.7'
 }

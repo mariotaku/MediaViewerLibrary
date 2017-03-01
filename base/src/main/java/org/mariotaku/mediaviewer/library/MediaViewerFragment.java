@@ -71,8 +71,8 @@ public abstract class MediaViewerFragment extends Fragment {
 
     protected abstract void releaseMediaResources();
 
-    protected abstract boolean isMediaLoading();
+    public abstract boolean isMediaLoading();
 
-    protected abstract boolean isMediaLoaded();
+    public abstract boolean isMediaLoaded();
 
 }

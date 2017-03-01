@@ -67,14 +67,6 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
                 downloadUri, getDownloadExtra(), getResultCreator(), ignoreCache);
     }
 
-    private FileCache getFileCache() {
-        return ((IMediaViewerActivity) getActivity()).getFileCache();
-    }
-
-    private MediaDownloader getDownloader() {
-        return ((IMediaViewerActivity) getActivity()).getDownloader();
-    }
-
     public final void startLoading(boolean ignoreCache) {
         if (!isAbleToLoad()) return;
         getLoaderManager().destroyLoader(0);
@@ -88,6 +80,28 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
         }
     }
 
+    @Override
+    public final void onLoadFinished(Loader<CacheDownloadLoader.Result> loader, @NonNull CacheDownloadLoader.Result data) {
+        mDownloadResult = data;
+        hideProgress();
+        displayMedia(data);
+    }
+
+    @Override
+    public final void onLoaderReset(Loader<CacheDownloadLoader.Result> loader) {
+        releaseMediaResources();
+    }
+
+    @Override
+    public boolean isMediaLoading() {
+        return getLoaderManager().hasRunningLoaders();
+    }
+
+    @Override
+    public boolean isMediaLoaded() {
+        return hasDownloadedData();
+    }
+
     @Nullable
     protected abstract Uri getDownloadUri();
 
@@ -99,29 +113,15 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
         return null;
     }
 
-    @Override
-    public final void onLoadFinished(Loader<CacheDownloadLoader.Result> loader, @NonNull CacheDownloadLoader.Result data) {
-        mDownloadResult = data;
-        hideProgress();
-        displayMedia(data);
-    }
-
     protected abstract void displayMedia(CacheDownloadLoader.Result data);
 
-    @Override
-    public final void onLoaderReset(Loader<CacheDownloadLoader.Result> loader) {
-        releaseMediaResources();
-    }
-
-    @Override
-    protected boolean isMediaLoading() {
-        return getLoaderManager().hasRunningLoaders();
-    }
-
-    @Override
-    protected boolean isMediaLoaded() {
-        return hasDownloadedData();
-    }
-
     protected abstract boolean isAbleToLoad();
+
+    private FileCache getFileCache() {
+        return ((IMediaViewerActivity) getActivity()).getFileCache();
+    }
+
+    private MediaDownloader getDownloader() {
+        return ((IMediaViewerActivity) getActivity()).getDownloader();
+    }
 }
