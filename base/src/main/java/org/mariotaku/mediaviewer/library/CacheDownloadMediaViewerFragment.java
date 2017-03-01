@@ -110,7 +110,17 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
 
     @Override
     public final void onLoaderReset(Loader<CacheDownloadLoader.Result> loader) {
-        recycleMedia();
+        releaseMediaResources();
+    }
+
+    @Override
+    protected boolean isMediaLoading() {
+        return getLoaderManager().hasRunningLoaders();
+    }
+
+    @Override
+    protected boolean isMediaLoaded() {
+        return hasDownloadedData();
     }
 
     protected abstract boolean isAbleToLoad();

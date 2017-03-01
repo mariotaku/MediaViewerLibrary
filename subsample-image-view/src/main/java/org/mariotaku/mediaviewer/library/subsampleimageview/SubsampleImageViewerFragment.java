@@ -142,7 +142,7 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
     }
 
     @Override
-    protected void recycleMedia() {
+    protected void releaseMediaResources() {
         mImageView.recycle();
     }
 
