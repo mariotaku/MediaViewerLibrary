@@ -69,8 +69,6 @@ public abstract class MediaViewerFragment extends Fragment {
         mediaContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    protected abstract void releaseMediaResources();
-
     public abstract boolean isMediaLoading();
 
     public abstract boolean isMediaLoaded();

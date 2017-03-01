@@ -115,6 +115,8 @@ public abstract class CacheDownloadMediaViewerFragment extends MediaViewerFragme
 
     protected abstract void displayMedia(CacheDownloadLoader.Result data);
 
+    protected abstract void releaseMediaResources();
+
     protected abstract boolean isAbleToLoad();
 
     private FileCache getFileCache() {
