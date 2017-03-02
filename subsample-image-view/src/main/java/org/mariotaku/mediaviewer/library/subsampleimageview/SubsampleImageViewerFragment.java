@@ -35,7 +35,7 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
         mImageView.setOnClickListener(this);
-        mImageView.setOnImageEventListener(new SubsamplingScaleImageView.OnImageEventListener() {
+        mImageView.setOnImageEventListener(new SubsamplingScaleImageView.DefaultOnImageEventListener() {
 
             boolean previewLoadError, imageLoadError;
 
@@ -69,10 +69,6 @@ public class SubsampleImageViewerFragment extends CacheDownloadMediaViewerFragme
                 }
             }
 
-            @Override
-            public void onTileLoadError(Exception e) {
-
-            }
         });
         setupImageView(mImageView);
         startLoading(false);
