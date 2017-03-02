@@ -19,11 +19,15 @@ public interface FileCache {
     File get(@NonNull String key) throws IOException;
 
     @WorkerThread
+    @Nullable
+    byte[] getExtra(@NonNull String key) throws IOException;
+
+    @WorkerThread
     void remove(@NonNull String key) throws IOException;
 
     @WorkerThread
     void save(@NonNull final String key, @NonNull final InputStream stream,
-              @Nullable final byte[] extra, @Nullable final CopyListener listener) throws IOException;
+            @Nullable final byte[] extra, @Nullable final CopyListener listener) throws IOException;
 
     @NonNull
     Uri toUri(@NonNull String key);

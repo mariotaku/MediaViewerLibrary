@@ -16,7 +16,7 @@ allprojects {
     apply plugin: 'maven'
 
     group = 'com.github.mariotaku.MediaViewerLibrary'
-    version = '0.9.20'
+    version = '0.9.21'
 
     repositories {
         jcenter()
