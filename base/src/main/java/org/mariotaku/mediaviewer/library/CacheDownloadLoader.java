@@ -104,7 +104,7 @@ public final class CacheDownloadLoader extends AsyncTaskLoader<CacheDownloadLoad
                     return mCreator.create(mFileCache.toUri(uriString));
                 } else {
                     mFileCache.remove(uriString);
-                    throw new IOException();
+                    throw new IOException("Invalid cache file");
                 }
             } catch (final Exception e) {
                 mHandler.post(new DownloadErrorRunnable(this, mListener.get(), e, nonce));
